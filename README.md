@@ -5,3 +5,7 @@ django-http-auth is a small app that aallows the user of django with multisite s
 ##Instalation
 Install from cheeshop using pip:
 >pip install django-http-auth
+
+#Acknowledgements
+Code insipred by:
+* https://github.com/amrox/django-moat
