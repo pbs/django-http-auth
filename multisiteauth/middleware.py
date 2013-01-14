@@ -1,64 +1,57 @@
 from django.conf import settings
-from django.http import HttpResponse, iri_to_uri, get_host
+from django.http import HttpResponse, get_host
 from django.core.urlresolvers import resolve
+from django.contrib.sites.models import Site
 
 import base64
 import logging
 
-class HttpResponseTemporaryRedirect(HttpResponse):
-    status_code = 307
-
-    def __init__(self, redirect_to):
-        HttpResponse.__init__(self)
-        self['Location'] = iri_to_uri(redirect_to)
-
 class BasicAuthProtectionMiddleware(object):
     """
-    Some middleware to authenticate all requests.
+    Some middleware to authenticate requests.
     """
     def __init__(self):
         self.basic_auth_enabled = getattr(settings, 'BASIC_HTTP_AUTH_ENABLED', False)
         self.basic_auth_username = getattr(settings, 'BASIC_HTTP_AUTH_GENERAL_USERNAME', '')
         self.basic_auth_password = getattr(settings, 'BASIC_HTTP_AUTH_GENERAL_PASS', '')
         # if looking only for blocking access for bad-behaved crawlers SSL is not required
-        # without encryption the basic auth credentials are sent in plain sight
-        self.basic_http_auth_requires_ssl = getattr(settings, 'BASIC_HTTP_AUTH_USE_SSL', '')
+        # BEWARE: without encryption the basic auth credentials are sent in plain text
+        #self.basic_auth_requires_ssl = getattr(settings, 'BASIC_HTTP_AUTH_USE_SSL', '')
+        self.whitelisted_views = set(getattr(settings, 'BASIC_HTTP_AUTH_BYPASSED_VIEWS', []))
+        self.allow_admin = set(getattr(settings, 'BASIC_HTTP_AUTH_ALLOW_ADMIN', True))
 
     def process_request(self, request):
         # adapted from https://github.com/amrox/django-moat/blob/master/moat/middleware.py
         # check if it's globally disabled
         if self.basic_auth_enabled:
-            # see if we already authenticated
-            if request.session.get('basicauth_username') != None:
-                logging.info("Already authenticated as: " + request.session.get('basicauth_username'))
-                return None
-            else:
-                logging.debug("Could not find auth user in session")
+            current_site = Site.objects.get(domain=get_host(request))
+            if hasattr(current_site, 'siteauthorizationstatus'):
+                auth_status = getattr(Site.objects.get(domain=get_host(request)), 'siteauthorizationstatus', None)
+                if auth_status and auth_status.require_basic_authentication:
+                    # check if we are already authenticated
+                    if request.session.get('basicauth_username') != None:
+                        logging.info("Already authenticated as: " + request.session.get('basicauth_username'))
+                        return None
+                    else:
+                        logging.debug("Could not find basic auth user in session")
 
-            view_func = resolve(request.META.get('PATH_INFO')).func
-            full_view_name = '%s.%s' % (view_func.__module__, view_func.__name__)
-            logging.debug("full_view_name = %s" % (full_view_name))
+                    view_func = resolve(request.META.get('PATH_INFO')).func
+                    full_view_name = '%s.%s' % (view_func.__module__, view_func.__name__)
+                    #if our view needs to bypass auth, then we just continue.
+                    # if it's not whitelisted we need to ask for credentials
+                    if full_view_name in self.whitelisted_views:
+                        return None
+                    if self.allow_admin and view_func.__module__.startswith('django.contrib.admin'):
+                        return None
 
-            # Check for "cloud" HTTPS environments
-            # adapted from http://djangosnippets.org/snippets/2472/
-            if 'HTTP_X_FORWARDED_PROTO' in request.META:
-                if request.META['HTTP_X_FORWARDED_PROTO'] == 'https':
-                    request.is_secure = lambda: True
+                    # Check for "cloud" HTTPS environments
+                    # adapted from http://djangosnippets.org/snippets/2472/
+                    if 'HTTP_X_FORWARDED_PROTO' in request.META:
+                        if request.META['HTTP_X_FORWARDED_PROTO'] == 'https':
+                            request.is_secure = lambda: True
 
-            #if use SSL for authentication, redirect to secure
-            if self.basic_http_auth_requires_ssl and not request.is_secure():
-                return self._redirect(request)
-
-            return self._http_auth_helper(request)
-
-    def _redirect(self, request):
-        newurl = "https://%s%s" % (get_host(request),request.get_full_path())
-        if settings.DEBUG and request.method == 'POST':
-            raise RuntimeError,\
-            """Django can't perform a SSL redirect while maintaining POST data.
-            Please structure your views so that redirects only occur during GETs."""
-
-        return HttpResponseTemporaryRedirect(newurl)
+                    return self._http_auth_helper(request)
+        return None
 
     def _http_auth_helper(self, request):
         # At this point, the user is either not logged in, or must log in using

@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.contrib.admin.sites import NotRegistered
 from django.contrib.sites.models import Site
 
-from models import AuthorizedSite
+from models import SiteAuthorizationStatus
 
 def _get_registered_modeladmin(model):
     """ This is a huge hack to get the registered modeladmin for the model.
@@ -15,7 +15,7 @@ RegisteredSiteAdmin = _get_registered_modeladmin(Site)
 SiteAdminForm = RegisteredSiteAdmin.form
 
 class AuthorizationAdminInline(admin.StackedInline):
-    model = AuthorizedSite
+    model = SiteAuthorizationStatus
     can_delete = False
     verbose_name = "Basic HTTP Authentication"
 
