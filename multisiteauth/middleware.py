@@ -18,7 +18,7 @@ class BasicAuthProtectionMiddleware(object):
         # BEWARE: without encryption the basic auth credentials are sent in plain text
         #self.basic_auth_requires_ssl = getattr(settings, 'BASIC_HTTP_AUTH_USE_SSL', '')
         self.whitelisted_views = set(getattr(settings, 'BASIC_HTTP_AUTH_BYPASSED_VIEWS', []))
-        self.allow_admin = set(getattr(settings, 'BASIC_HTTP_AUTH_ALLOW_ADMIN', True))
+        self.allow_admin = getattr(settings, 'BASIC_HTTP_AUTH_ALLOW_ADMIN', True)
 
     def process_request(self, request):
         # adapted from https://github.com/amrox/django-moat/blob/master/moat/middleware.py
