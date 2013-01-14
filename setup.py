@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
-dependencies = []
+dependencies = ["Djange >=1.4"]
 
 dependency_links = []
 
