@@ -12,7 +12,6 @@ def _get_registered_modeladmin(model):
     return type(admin.site._registry[model])
 
 RegisteredSiteAdmin = _get_registered_modeladmin(Site)
-SiteAdminForm = RegisteredSiteAdmin.form
 
 class AuthorizationAdminInline(admin.StackedInline):
     model = SiteAuthorizationStatus
@@ -20,7 +19,7 @@ class AuthorizationAdminInline(admin.StackedInline):
     verbose_name = "Basic HTTP Authentication"
 
 class ExtendedSiteAdmin(RegisteredSiteAdmin):
-    inlines = [AuthorizationAdminInline, ]
+    inlines = RegisteredSiteAdmin.inlines + [AuthorizationAdminInline]
 
 try:
     admin.site.unregister(Site)
