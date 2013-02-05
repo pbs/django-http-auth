@@ -24,9 +24,9 @@ class BasicAuthProtectionMiddleware(object):
         # adapted from https://github.com/amrox/django-moat/blob/master/moat/middleware.py
         # check if it's globally disabled
         if self.basic_auth_enabled:
-            current_site = Site.objects.get(domain=get_host(request))
+            current_site = Site.objects.get_current()
             if hasattr(current_site, 'siteauthorizationstatus'):
-                auth_status = getattr(Site.objects.get(domain=get_host(request)), 'siteauthorizationstatus', None)
+                auth_status = getattr(current_site , 'siteauthorizationstatus', None)
                 if auth_status and auth_status.require_basic_authentication:
                     # check if we are already authenticated
                     if request.session.get('basicauth_username') != None:
