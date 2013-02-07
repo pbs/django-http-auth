@@ -41,7 +41,9 @@ class BasicAuthProtectionMiddleware(object):
                     # if it's not whitelisted we need to ask for credentials
                     if full_view_name in self.whitelisted_views:
                         return None
-                    if self.allow_admin and view_func.__module__.startswith('django.contrib.admin'):
+                    if self.allow_admin and\
+                       (view_func.__module__.startswith('django.contrib.admin') or\
+                        view_func.__module__.startswith('cms.admin')):
                         return None
 
                     # Check for "cloud" HTTPS environments
