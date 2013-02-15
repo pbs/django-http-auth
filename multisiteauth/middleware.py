@@ -7,16 +7,18 @@ from multisiteauth import settings as local_settings
 import base64
 import logging
 
+
 class BasicAuthProtectionMiddleware(object):
     """
     Some middleware to authenticate requests.
     """
+
     def __init__(self):
         if not local_settings.HTTP_AUTH_ENABLED:
             raise MiddlewareNotUsed("Basic authentication is not used, this removes it from middleware")
-        # if looking only for blocking access for bad-behaved crawlers SSL is not required
-        # BEWARE: without encryption the basic auth credentials are sent in plain text
-        #self.basic_auth_requires_ssl = getattr(settings, 'BASIC_HTTP_AUTH_USE_SSL', '')
+            # if looking only for blocking access for bad-behaved crawlers SSL is not required
+            # BEWARE: without encryption the basic auth credentials are sent in plain text
+            #self.basic_auth_requires_ssl = getattr(settings, 'BASIC_HTTP_AUTH_USE_SSL', '')
 
     def process_request(self, request):
         # adapted from https://github.com/amrox/django-moat/blob/master/moat/middleware.py
@@ -24,7 +26,7 @@ class BasicAuthProtectionMiddleware(object):
         if local_settings.HTTP_AUTH_ENABLED:
             current_site = Site.objects.get_current()
             if hasattr(current_site, 'siteauthorizationstatus'):
-                auth_status = getattr(current_site , 'siteauthorizationstatus', None)
+                auth_status = getattr(current_site, 'siteauthorizationstatus', None)
                 if auth_status and auth_status.require_basic_authentication:
                     # check if we are already authenticated
                     if request.session.get('basicauth_username'):
@@ -62,8 +64,8 @@ class BasicAuthProtectionMiddleware(object):
                 if auth[0].lower() == 'basic':
                     # Currently, only basic http auth is used.
                     uname, passwd = base64.b64decode(auth[1]).split(':')
-                    if uname==local_settings.HTTP_AUTH_GENERAL_USERNAME and \
-                       passwd == local_settings.HTTP_AUTH_GENERAL_PASS:
+                    if uname == local_settings.HTTP_AUTH_GENERAL_USERNAME and \
+                                    passwd == local_settings.HTTP_AUTH_GENERAL_PASS:
                         request.session['basicauth_username'] = uname
                         return None
 
