@@ -1,11 +1,12 @@
-from django.http import HttpResponse
-from django.core.urlresolvers import resolve, reverse
-from django.contrib.sites.models import Site
-from django.core.exceptions import MiddlewareNotUsed
-from multisiteauth import settings as local_settings
-
 import base64
 import logging
+from django.core.urlresolvers import reverse
+
+from django.http import HttpResponse
+from django.contrib.sites.models import Site
+from django.core.exceptions import MiddlewareNotUsed
+
+from multisiteauth import settings as local_settings
 
 
 class BasicAuthProtectionMiddleware(object):
@@ -14,6 +15,7 @@ class BasicAuthProtectionMiddleware(object):
     """
 
     def __init__(self):
+        # we'll never get into process request in case HTTP_AUTH is disabled
         if not local_settings.HTTP_AUTH_ENABLED:
             raise MiddlewareNotUsed("Basic authentication is not used, this removes it from middleware")
             # if looking only for blocking access for bad-behaved crawlers SSL is not required
@@ -22,36 +24,29 @@ class BasicAuthProtectionMiddleware(object):
 
     def process_request(self, request):
         # adapted from https://github.com/amrox/django-moat/blob/master/moat/middleware.py
-        # check if it's globally disabled
-        if local_settings.HTTP_AUTH_ENABLED:
-            current_site = Site.objects.get_current()
-            if hasattr(current_site, 'siteauthorizationstatus'):
-                auth_status = getattr(current_site, 'siteauthorizationstatus', None)
-                if auth_status and auth_status.require_basic_authentication:
-                    # check if we are already authenticated
-                    if request.session.get('basicauth_username'):
-                        logging.info("Already authenticated as: " + request.session.get('basicauth_username'))
-                        return None
-                    else:
-                        logging.debug("Could not find basic auth user in session")
+        current_site = Site.objects.get_current()
+        if hasattr(current_site, 'siteauthorizationstatus'):
+            auth_status = getattr(current_site, 'siteauthorizationstatus', None)
+            if auth_status and auth_status.require_basic_authentication:
+                # check if we are already authenticated
+                if request.session.get('basicauth_username'):
+                    logging.info("Already authenticated as: " + request.session.get('basicauth_username'))
+                    return None
+                else:
+                    logging.debug("Could not find basic auth user in session")
 
-                    view_func = resolve(request.META.get('PATH_INFO')).func
-                    full_view_name = '%s.%s' % (view_func.__module__, view_func.__name__)
-                    #if our view needs to bypass auth, then we just continue.
-                    # if it's not whitelisted we need to ask for credentials
-                    if full_view_name in local_settings.HTTP_AUTH_BYPASSED_VIEWS:
-                        return None
+                if local_settings.HTTP_AUTH_ALLOW_ADMIN \
+                        and (request.path.startswith(reverse('admin:index')) \
+                        or request.user.is_authenticated()):
+                    return None
 
-                    if local_settings.HTTP_AUTH_ALLOW_ADMIN and request.path.startswith(reverse('admin:index')):
-                        return None
+                # Check for "cloud" HTTPS environments
+                # adapted from http://djangosnippets.org/snippets/2472/
+                if 'HTTP_X_FORWARDED_PROTO' in request.META:
+                    if request.META['HTTP_X_FORWARDED_PROTO'] == 'https':
+                        request.is_secure = lambda: True
 
-                    # Check for "cloud" HTTPS environments
-                    # adapted from http://djangosnippets.org/snippets/2472/
-                    if 'HTTP_X_FORWARDED_PROTO' in request.META:
-                        if request.META['HTTP_X_FORWARDED_PROTO'] == 'https':
-                            request.is_secure = lambda: True
-
-                    return self._http_auth_helper(request)
+                return self._http_auth_helper(request)
         return None
 
     def _http_auth_helper(self, request):
@@ -63,10 +58,10 @@ class BasicAuthProtectionMiddleware(object):
             if len(auth) == 2:
                 if auth[0].lower() == 'basic':
                     # Currently, only basic http auth is used.
-                    uname, passwd = base64.b64decode(auth[1]).split(':')
-                    if uname == local_settings.HTTP_AUTH_GENERAL_USERNAME and \
-                                    passwd == local_settings.HTTP_AUTH_GENERAL_PASS:
-                        request.session['basicauth_username'] = uname
+                    username, password = base64.b64decode(auth[1]).split(':')
+                    if username == local_settings.HTTP_AUTH_GENERAL_USERNAME and \
+                                    password == local_settings.HTTP_AUTH_GENERAL_PASS:
+                        request.session['basicauth_username'] = username
                         return None
 
         # The username/password combo was incorrect, or not logprovided.
