@@ -30,23 +30,5 @@
             "domain": "test-site2.local.org",
             "name": "Test Site 2"
         }
-    },
-    {
-        "pk": 1,
-        "model": "auth.user",
-        "fields": {
-            "username": "user",
-            "first_name": "",
-            "last_name": "",
-            "is_active": true,
-            "is_superuser": true,
-            "is_staff": true,
-            "last_login": "2013-02-19T14:20:31",
-            "groups": [],
-            "user_permissions": [],
-            "password": "pbkdf2_sha256$10000$ueoZqmDiQNwG$/7hKBDO4vvnLwfj4i6QxlHN9meYR5PoMJEOH2Yxlk/s=",
-            "email": "test@test.org",
-            "date_joined": "2013-02-19T14:20:31"
-        }
     }
 ]

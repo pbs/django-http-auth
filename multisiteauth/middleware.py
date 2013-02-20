@@ -36,8 +36,8 @@ class BasicAuthProtectionMiddleware(object):
                     logging.debug("Could not find basic auth user in session")
 
                 if local_settings.HTTP_AUTH_ALLOW_ADMIN \
-                        and (request.path.startswith(reverse('admin:index')) \
-                        or request.user.is_authenticated()):
+                    and (request.path.startswith(reverse('admin:index')) \
+                             or request.user.is_authenticated()):
                     return None
 
                 # Check for "cloud" HTTPS environments
