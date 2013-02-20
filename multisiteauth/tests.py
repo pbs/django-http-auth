@@ -1,4 +1,5 @@
 import base64
+from django.core.urlresolvers import reverse
 
 from django.test import TestCase
 from django.test.client import Client
@@ -46,7 +47,7 @@ class CheckAuthenticationTestCase(TestCase):
     def testNoBypassAdminAuthenticatedUsers(self):
         allow_admin = local_settings.HTTP_AUTH_ALLOW_ADMIN
         local_settings.HTTP_AUTH_ALLOW_ADMIN = False
-        response = self.client.get('/admin', {})
+        response = self.client.get(reverse('admin:index'), {})
         self.assertEquals(response.status_code, 401, "Authentication was not requested for admin (admin bypass off).")
         local_settings.HTTP_AUTH_ALLOW_ADMIN = allow_admin
 
