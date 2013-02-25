@@ -1,0 +1,34 @@
+[
+    {
+        "pk": 1,
+        "model": "multisiteauth.siteauthorizationstatus",
+        "fields": {
+            "require_basic_authentication": true,
+            "site": 1
+        }
+    },
+    {
+        "pk": 2,
+        "model": "multisiteauth.siteauthorizationstatus",
+        "fields": {
+            "require_basic_authentication": false,
+            "site": 2
+        }
+    },
+    {
+        "pk": 1,
+        "model": "sites.site",
+        "fields": {
+            "domain": "test-site1.local.org",
+            "name": "Test Site 1"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "sites.site",
+        "fields": {
+            "domain": "test-site2.local.org",
+            "name": "Test Site 2"
+        }
+    }
+]
