@@ -51,3 +51,5 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
 )
+
+SECRET_KEY = 'h34Ejc8ErE88UejQ012WQldnE3rEjCdd'

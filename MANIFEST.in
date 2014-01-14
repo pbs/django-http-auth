@@ -1,1 +1,3 @@
 include README.md
+recursive-include multisiteauth/fixtures *
+recursive-include multisiteauth/templates *
