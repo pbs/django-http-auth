@@ -3,4 +3,5 @@
 *.egg
 dist/*
 .idea/*
-echo .tox
+pytest-results.xml
+.tox

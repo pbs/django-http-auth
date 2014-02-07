@@ -16,6 +16,4 @@ setup(
     include_package_data=True,
     install_requires=dependencies,
     setup_requires=['s3sourceuploader', ],
-    tests_require=['django-nose',],
-    test_suite='runtests.runtests',
 )
