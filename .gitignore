@@ -5,3 +5,4 @@ dist/*
 .idea/*
 pytest-results.xml
 .tox
+*.pyo
