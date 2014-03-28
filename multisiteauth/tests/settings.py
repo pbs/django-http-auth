@@ -8,13 +8,12 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.sitemaps',
     'multisiteauth',
-    # 'django_nose',
 ]
 
 # TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 STATIC_ROOT = '/static/'
 STATIC_URL = '/static/'
-ROOT_URLCONF = 'urls_test'
+ROOT_URLCONF = 'multisiteauth.tests.urls'
 TEMPLATE_CONTEXT_PROCESSORS = [
     "django.contrib.auth.context_processors.auth",
     'django.contrib.messages.context_processors.messages',
@@ -52,3 +51,5 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
 )
+
+SECRET_KEY = 'h34Ejc8ErE88UejQ012WQldnE3rEjCdd'

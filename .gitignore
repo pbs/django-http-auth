@@ -3,5 +3,6 @@
 *.egg
 dist/*
 .idea/*
-echo .tox
 *.pyo
+pytest-results.xml
+.tox
