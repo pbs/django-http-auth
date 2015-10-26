@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 
 from django.test import TestCase
 from django.test.client import Client
+from django.test.utils import override_settings
 
 from multisiteauth import settings as local_settings
 
@@ -113,3 +114,27 @@ class CheckUnauthorizedSiteTestCase(TestCase):
         self.assertNotEqual(response.status_code, 401, "Authorization was requested for Site 2")
 
 
+class URLExceptionsTestCase(TestCase):
+    fixtures = ['siteauth.json']
+
+    def setUp(self):
+        local_settings.HTTP_AUTH_ENABLED = True
+        local_settings.HTTP_AUTH_GENERAL_USERNAME = 'basic_http_user'
+        local_settings.HTTP_AUTH_GENERAL_PASS = "basic_http_pass"
+        local_settings.HTTP_AUTH_REALM = ''
+        local_settings.HTTP_AUTH_URL_EXCEPTIONS = [r'^/exception/.*$']
+        self.client = Client(HTTP_HOST="test-site1.local.org")
+        superuser = User.objects.create_superuser(
+            username="user", email="test@test.org", password="password"
+        )
+        superuser.save()
+
+    @override_settings(SITE_ID=1)
+    def test_exception_works(self):
+        response = self.client.get('/exception/', {})
+        self.assertNotEqual(response.status_code, 401)
+        response = self.client.get('/no_exception/', {})
+        self.assertEqual(response.status_code, 401)
+
+    def tearDown(self):
+        self.client = None
