@@ -1,7 +1,8 @@
 import base64
 import logging
-from django.core.urlresolvers import reverse
+import re
 
+from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.contrib.sites.models import Site
 from django.core.exceptions import MiddlewareNotUsed
@@ -22,6 +23,13 @@ class BasicAuthProtectionMiddleware(object):
             # BEWARE: without encryption the basic auth credentials are sent in plain text
             #self.basic_auth_requires_ssl = getattr(settings, 'BASIC_HTTP_AUTH_USE_SSL', '')
 
+        self.exception_patterns = [
+            re.compile(exception_pattern) for exception_pattern
+            in local_settings.HTTP_AUTH_URL_EXCEPTIONS
+        ]
+        logging.debug("Using %s URLs for basic auth exceptions",
+                      local_settings.HTTP_AUTH_URL_EXCEPTIONS)
+
     def process_request(self, request):
         # adapted from https://github.com/amrox/django-moat/blob/master/moat/middleware.py
         current_site = Site.objects.get_current()
@@ -30,7 +38,8 @@ class BasicAuthProtectionMiddleware(object):
             if auth_status and auth_status.require_basic_authentication:
                 # check if we are already authenticated
                 if request.session.get('basicauth_username'):
-                    logging.info("Already authenticated as: " + request.session.get('basicauth_username'))
+                    logging.info("Already authenticated as: %s",
+                                 request.session.get('basicauth_username'))
                     return None
                 else:
                     logging.debug("Could not find basic auth user in session")
@@ -38,6 +47,9 @@ class BasicAuthProtectionMiddleware(object):
                 if local_settings.HTTP_AUTH_ALLOW_ADMIN \
                     and (request.path.startswith(reverse('admin:index')) \
                              or request.user.is_authenticated()):
+                    return None
+
+                if self._matches_url_exceptions(request.path):
                     return None
 
                 # Check for "cloud" HTTPS environments
@@ -48,6 +60,18 @@ class BasicAuthProtectionMiddleware(object):
 
                 return self._http_auth_helper(request)
         return None
+
+    def _matches_url_exceptions(self, request_path):
+        if not self.exception_patterns:
+            return False
+        for exception_pattern in self.exception_patterns:
+            if exception_pattern.match(request_path):
+                logging.debug("Request path %s matches excepted pattern: %s",
+                              request_path, exception_pattern)
+                return True
+        logging.debug("Request %s does not match any excepted URL", request_path)
+        return False
+
 
     def _http_auth_helper(self, request):
         # At this point, the user is either not logged in, or must log in using
