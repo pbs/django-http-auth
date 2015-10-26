@@ -29,21 +29,26 @@ class CheckSiteRequiresAuthTestCase(TestCase):
         self.client = None
 
     def testAuthRequest(self):
-        response = self.client.get('/', {})
+        response = self.client.get('/exception/', {})
         self.assertEquals(response.status_code, 401, "Authorization was not requested for Site 1")
 
 
     def testAuthLogin(self):
         response = self.client.get('/', **{'HTTP_AUTHORIZATION': _auth_encode("baduser", "badpass")})
-        self.assertEqual(response.status_code, 401,
-                         "Response status code: %s\nAuthorized to access Site 1 with wrong credentials" \
-                         %response.status_code)
-        response = self.client.get('/',
-                                   **{'HTTP_AUTHORIZATION': _auth_encode(local_settings.HTTP_AUTH_GENERAL_USERNAME,
-                                                                         local_settings.HTTP_AUTH_GENERAL_PASS)})
-        self.assertNotEqual(response.status_code, 401,
-                            "Response status code: %s\nNot authorized to access Site 1 pages for correct credentials" \
-                            %response.status_code)
+        self.assertEqual(
+            response.status_code, 401,
+            "Response status code: %s\nAuthorized to access Site 1 with wrong credentials"
+            % response.status_code
+        )
+        response = self.client.get(
+            '/',
+            **{'HTTP_AUTHORIZATION': _auth_encode(local_settings.HTTP_AUTH_GENERAL_USERNAME,
+                                                  local_settings.HTTP_AUTH_GENERAL_PASS)}
+        )
+        self.assertNotEqual(
+            response.status_code, 401,
+            "Response status code: %s\nNot authorized to access Site 1 pages for correct "
+            "credentials" %response.status_code)
 
 
 class AdminAuthorizationSiteTestCase(TestCase):
@@ -56,7 +61,9 @@ class AdminAuthorizationSiteTestCase(TestCase):
         local_settings.HTTP_AUTH_REALM = ''
         self.settings(SITE_ID=1)
         self.client = Client(HTTP_HOST="test-site1.local.org")
-        superuser = User.objects.create_superuser(username="user", email="test@test.org", password="password")
+        superuser = User.objects.create_superuser(
+            username="user", email="test@test.org", password="password"
+        )
         superuser.save()
 
 
