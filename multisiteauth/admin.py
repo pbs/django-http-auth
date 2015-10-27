@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.admin.sites import NotRegistered
 from django.contrib.sites.models import Site
 
-from models import SiteAuthorizationStatus
+from .models import SiteAuthorizationStatus
 
 
 def _get_registered_modeladmin(model):

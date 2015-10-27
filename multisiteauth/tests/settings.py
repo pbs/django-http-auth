@@ -42,10 +42,42 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'multisiteauth.middleware.BasicAuthProtectionMiddleware',
 )
-SITE_ID=1
+SITE_ID = 1
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
 )
 
 SECRET_KEY = 'h34Ejc8ErE88UejQ012WQldnE3rEjCdd'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+    'loggers': {
+        'django.request': {
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.security': {
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    }
+}
