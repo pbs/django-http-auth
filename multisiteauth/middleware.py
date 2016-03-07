@@ -4,7 +4,6 @@ import re
 
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
-from django.contrib.sites.models import Site
 from django.core.exceptions import MiddlewareNotUsed
 
 from multisiteauth import settings as local_settings
@@ -32,7 +31,7 @@ class BasicAuthProtectionMiddleware(object):
 
     def process_request(self, request):
         # adapted from https://github.com/amrox/django-moat/blob/master/moat/middleware.py
-        current_site = Site.objects.get_current()
+        current_site = local_settings.get_current_site(request)
         if hasattr(current_site, 'siteauthorizationstatus'):
             auth_status = getattr(current_site, 'siteauthorizationstatus', None)
             if auth_status and auth_status.require_basic_authentication:
