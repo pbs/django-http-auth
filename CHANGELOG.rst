@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+Revision 1f04284 (10.05.2016, 07:38 UTC)
+----------------------------------------
+
+* LUN-2767
+
+  * Allow using different implementations for site caching.
+
+No other commits.
+
 Revision bf8165d (28.10.2015, 11:55 UTC)
 ----------------------------------------
 
