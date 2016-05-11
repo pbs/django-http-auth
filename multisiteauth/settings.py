@@ -18,5 +18,6 @@ HTTP_AUTH_GET_CURRENT_SITE = getattr(
 try:
     get_current_site = import_string(HTTP_AUTH_GET_CURRENT_SITE)
 except ImportError as exc:
-    err_msg = "Cannot import {}! This is used to get the current site."
+    err_msg = "Cannot import {}! This is used to get the current site.".format(
+        HTTP_AUTH_GET_CURRENT_SITE)
     raise ImproperlyConfigured(err_msg)
