@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+Revision 0bdec8f (15.06.2016, 09:02 UTC)
+----------------------------------------
+
+* LUN-2767
+
+  * Add missing parameter to exception message.
+
+No other commits.
+
 Revision 1f04284 (10.05.2016, 07:38 UTC)
 ----------------------------------------
 
