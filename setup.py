@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
-dependencies = ["Django>=1.4"]
+dependencies = ["Django>=1.4,<1.9"]
 
-dependency_links = []
 
 setup(
     name='django-http-auth',

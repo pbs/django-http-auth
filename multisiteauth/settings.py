@@ -10,6 +10,16 @@ HTTP_AUTH_ALLOW_ADMIN = getattr(settings, 'BASIC_HTTP_AUTH_ALLOW_ADMIN', True)
 HTTP_AUTH_REALM = getattr(settings, 'BASIC_HTTP_AUTH_REALM', '')
 HTTP_AUTH_URL_EXCEPTIONS = getattr(settings, 'BASIC_HTTP_AUTH_URL_EXCEPTIONS', [])
 
+"""
+Option to set a custom check for determining if a site has http auth enabled.
+If set, it overrides the standard check (site.siteauthoriazationstatus.require_basic_authentication).
+If set, it must be the full path (string) to a callable that receives a
+django.contrib.sites.models.Site and returns True if basic auth is enabled for that site
+and False otherwise.
+"""
+HTTP_AUTH_IS_SITE_PROTECTED = getattr(settings, 'BASIC_HTTP_AUTH_IS_SITE_PROTECTED', None)
+
+
 HTTP_AUTH_GET_CURRENT_SITE = getattr(
     settings,
     'BASIC_HTTP_AUTH_GET_CURRENT_SITE',
