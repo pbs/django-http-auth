@@ -6,3 +6,4 @@ dist/*
 pytest-results.xml
 .tox
 *.pyo
+.coverage

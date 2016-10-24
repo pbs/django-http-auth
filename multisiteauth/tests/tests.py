@@ -1,17 +1,24 @@
+from __future__ import unicode_literals
 import base64
+
+import pytest
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from django.contrib.sites.models import Site
 
 from django.test import TestCase
 from django.test.client import Client
 from django.test.utils import override_settings
+from django.core.exceptions import MiddlewareNotUsed
 
 from multisiteauth import settings as local_settings
+from multisiteauth.middleware import BasicAuthProtectionMiddleware
 
 
 def _auth_encode(username, password):
     """helper method to generate auth encoding"""
-    return "Basic " + base64.b64encode("%s:%s" % (username, password))
+    credentials = "{}:{}".format(username, password).encode('ascii')
+    return "Basic " + base64.b64encode(credentials).decode('ascii')
 
 
 class CheckSiteRequiresAuthTestCase(TestCase):
@@ -138,3 +145,52 @@ class URLExceptionsTestCase(TestCase):
 
     def tearDown(self):
         self.client = None
+
+
+class NotUsedTestCase(TestCase):
+
+    def setUp(self):
+        local_settings.HTTP_AUTH_ENABLED = False
+
+    def test_middleware_is_ignored(self):
+        with pytest.raises(MiddlewareNotUsed):
+            BasicAuthProtectionMiddleware()
+
+
+def return_false(site):
+    assert isinstance(site, Site)
+    return False
+
+
+def return_true(site):
+    assert isinstance(site, Site)
+    return True
+
+
+class CustomCheckerTestCase(TestCase):
+    fixtures = ['siteauth.json']
+
+    def setUp(self):
+        local_settings.HTTP_AUTH_ENABLED = True
+        self.site = Site.objects.create()
+
+    def tearDown(self):
+        self.client = None
+
+    def test_custom_check(self):
+        middleware = BasicAuthProtectionMiddleware()
+        assert middleware.site_checker is None
+
+        local_settings.HTTP_AUTH_IS_SITE_PROTECTED = 'multisiteauth.tests.tests.return_false'
+        middleware = BasicAuthProtectionMiddleware()
+        assert middleware.site_checker == return_false
+        assert middleware.is_auth_enabled_for_site(self.site) is False
+
+        local_settings.HTTP_AUTH_IS_SITE_PROTECTED = 'multisiteauth.tests.tests.return_true'
+        middleware = BasicAuthProtectionMiddleware()
+        assert middleware.site_checker == return_true
+        assert middleware.is_auth_enabled_for_site(self.site)
+
+        local_settings.HTTP_AUTH_IS_SITE_PROTECTED = 'fake.does_not_exist'
+        middleware = BasicAuthProtectionMiddleware()
+        assert middleware.site_checker is None
