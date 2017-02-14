@@ -1,6 +1,17 @@
 CHANGELOG
 =========
 
+Revision 7b4d44d (14.02.2017, 12:11 UTC)
+----------------------------------------
+
+* LUN-3122
+
+  * Support custom site checking option and python 3.
+
+* Misc commits
+
+  * Temporary disable checking for python 3.5 so CI works.
+
 Revision 0bdec8f (15.06.2016, 09:02 UTC)
 ----------------------------------------
 
