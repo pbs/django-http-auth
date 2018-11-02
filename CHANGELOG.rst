@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+Revision 0860358 (02.11.2018, 16:12 UTC)
+----------------------------------------
+
+No new issues.
+
+* Misc commits
+
+  * Pin pytest, pytest-django, pytest-cov
+
 Revision 7b4d44d (14.02.2017, 12:11 UTC)
 ----------------------------------------
 
