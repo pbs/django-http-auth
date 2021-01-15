@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
-dependencies = ["Django>=1.4,<1.9"]
+dependencies = ["Django>=1.4,<3"]
 
 
 setup(
     name='django-http-auth',
-    version='1.1.1',
+    version='2.0.0',
     description='Simple django multisite Basic HTTP authentication middleware',
     author='TPG Bento Team',
     author_email='TPG-PBS-Bento@3pillarglobal.com',
