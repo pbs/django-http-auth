@@ -3,10 +3,11 @@ import base64
 import logging
 import re
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponse
 from django.core.exceptions import MiddlewareNotUsed
 from django.utils.module_loading import import_string
+from django.utils.deprecation import MiddlewareMixin
 
 from multisiteauth import settings as local_settings
 
@@ -24,12 +25,13 @@ def get_custom_site_checker():
             return None
 
 
-class BasicAuthProtectionMiddleware(object):
+class BasicAuthProtectionMiddleware(MiddlewareMixin):
     """
     Some middleware to authenticate requests.
     """
 
-    def __init__(self):
+    def __init__(self, get_response):
+        self.get_response = get_response
         # we'll never get into process request in case HTTP_AUTH is disabled
         if not local_settings.HTTP_AUTH_ENABLED:
             msg = "Basic authentication is not used, this removes it from middleware"
