@@ -48,7 +48,6 @@ class BasicAuthProtectionMiddleware(MiddlewareMixin):
                      local_settings.HTTP_AUTH_URL_EXCEPTIONS)
         self.site_checker = get_custom_site_checker()
 
-
     def process_request(self, request):
         # adapted from https://github.com/amrox/django-moat/blob/master/moat/middleware.py
         current_site = local_settings.get_current_site(request)
