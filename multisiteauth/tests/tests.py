@@ -1,15 +1,15 @@
 from __future__ import unicode_literals
+
 import base64
 
 import pytest
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
 from django.contrib.sites.models import Site
-
+from django.core.exceptions import MiddlewareNotUsed
 from django.test import TestCase
 from django.test.client import Client
 from django.test.utils import override_settings
-from django.core.exceptions import MiddlewareNotUsed
+from django.urls import reverse
 
 from multisiteauth import settings as local_settings
 from multisiteauth.middleware import BasicAuthProtectionMiddleware
@@ -154,7 +154,7 @@ class NotUsedTestCase(TestCase):
 
     def test_middleware_is_ignored(self):
         with pytest.raises(MiddlewareNotUsed):
-            BasicAuthProtectionMiddleware()
+            BasicAuthProtectionMiddleware(lambda request: None)
 
 
 def return_false(site):
@@ -178,19 +178,19 @@ class CustomCheckerTestCase(TestCase):
         self.client = None
 
     def test_custom_check(self):
-        middleware = BasicAuthProtectionMiddleware()
+        middleware = BasicAuthProtectionMiddleware(lambda request: None)
         assert middleware.site_checker is None
 
         local_settings.HTTP_AUTH_IS_SITE_PROTECTED = 'multisiteauth.tests.tests.return_false'
-        middleware = BasicAuthProtectionMiddleware()
+        middleware = BasicAuthProtectionMiddleware(lambda request: None)
         assert middleware.site_checker == return_false
         assert middleware.is_auth_enabled_for_site(self.site) is False
 
         local_settings.HTTP_AUTH_IS_SITE_PROTECTED = 'multisiteauth.tests.tests.return_true'
-        middleware = BasicAuthProtectionMiddleware()
+        middleware = BasicAuthProtectionMiddleware(lambda request: None)
         assert middleware.site_checker == return_true
         assert middleware.is_auth_enabled_for_site(self.site)
 
         local_settings.HTTP_AUTH_IS_SITE_PROTECTED = 'fake.does_not_exist'
-        middleware = BasicAuthProtectionMiddleware()
+        middleware = BasicAuthProtectionMiddleware(lambda request: None)
         assert middleware.site_checker is None

@@ -1,15 +1,15 @@
 from __future__ import unicode_literals
+
 import base64
 import logging
 import re
 
-from django.core.urlresolvers import reverse
-from django.http import HttpResponse
 from django.core.exceptions import MiddlewareNotUsed
+from django.http import HttpResponse
+from django.urls import reverse
 from django.utils.module_loading import import_string
 
 from multisiteauth import settings as local_settings
-
 
 logger = logging.getLogger(__name__)
 
@@ -24,12 +24,13 @@ def get_custom_site_checker():
             return None
 
 
-class BasicAuthProtectionMiddleware(object):
+class BasicAuthProtectionMiddleware:
     """
     Some middleware to authenticate requests.
     """
 
-    def __init__(self):
+    def __init__(self, get_response):
+        self.get_response = get_response
         # we'll never get into process request in case HTTP_AUTH is disabled
         if not local_settings.HTTP_AUTH_ENABLED:
             msg = "Basic authentication is not used, this removes it from middleware"
@@ -46,35 +47,39 @@ class BasicAuthProtectionMiddleware(object):
                      local_settings.HTTP_AUTH_URL_EXCEPTIONS)
         self.site_checker = get_custom_site_checker()
 
-
-    def process_request(self, request):
+    def __call__(self, request):
         # adapted from https://github.com/amrox/django-moat/blob/master/moat/middleware.py
         current_site = local_settings.get_current_site(request)
+
         if self.is_auth_enabled_for_site(current_site):
             # check if we are already authenticated
             if request.session.get('basicauth_username'):
                 logger.debug("Already authenticated as: %s",
                              request.session.get('basicauth_username'))
-                return None
             else:
                 logger.debug("Could not find basic auth user in session")
 
-            if local_settings.HTTP_AUTH_ALLOW_ADMIN \
-               and (request.path.startswith(reverse('admin:index')) \
-                    or request.user.is_authenticated()):
-                return None
+                if (local_settings.HTTP_AUTH_ALLOW_ADMIN
+                        and (request.path.startswith(reverse('admin:index'))
+                             or request.user.is_authenticated)):
+                    pass  # Allow access
+                elif self._matches_url_exceptions(request.path):
+                    pass  # Allow access
+                else:
+                    # Check for "cloud" HTTPS environments
+                    # adapted from http://djangosnippets.org/snippets/2472/
+                    if 'HTTP_X_FORWARDED_PROTO' in request.META:
+                        if request.META['HTTP_X_FORWARDED_PROTO'] == 'https':
+                            request.is_secure = lambda: True
 
-            if self._matches_url_exceptions(request.path):
-                return None
+                    # Return 401 response if auth fails
+                    auth_response = self._http_auth_helper(request)
+                    if auth_response is not None:
+                        return auth_response
 
-            # Check for "cloud" HTTPS environments
-            # adapted from http://djangosnippets.org/snippets/2472/
-            if 'HTTP_X_FORWARDED_PROTO' in request.META:
-                if request.META['HTTP_X_FORWARDED_PROTO'] == 'https':
-                    request.is_secure = lambda: True
-
-            return self._http_auth_helper(request)
-        return None
+        # Continue with normal request processing
+        response = self.get_response(request)
+        return response
 
     def is_auth_enabled_for_site(self, site):
         if self.site_checker:
@@ -107,8 +112,8 @@ class BasicAuthProtectionMiddleware(object):
                     auth_content = auth[1].encode('ascii')
                     decoded_content = base64.b64decode(auth_content).decode('ascii')
                     username, password = decoded_content.split(':')
-                    if username == local_settings.HTTP_AUTH_GENERAL_USERNAME and \
-                                    password == local_settings.HTTP_AUTH_GENERAL_PASS:
+                    if (username == local_settings.HTTP_AUTH_GENERAL_USERNAME
+                            and password == local_settings.HTTP_AUTH_GENERAL_PASS):
                         request.session['basicauth_username'] = username
                         return None
 
