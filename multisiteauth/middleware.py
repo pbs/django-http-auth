@@ -30,7 +30,7 @@ class BasicAuthProtectionMiddleware:
     """
 
     def __init__(self, get_response):
-        super(BasicAuthProtectionMiddleware, self).__init__(get_response)
+        self.get_response = get_response
         # we'll never get into process request in case HTTP_AUTH is disabled
         if not local_settings.HTTP_AUTH_ENABLED:
             msg = "Basic authentication is not used, this removes it from middleware"
@@ -74,7 +74,7 @@ class BasicAuthProtectionMiddleware:
 
                     # Return 401 response if auth fails
                     auth_response = self._http_auth_helper(request)
-                    if auth_response:
+                    if auth_response is not None and getattr(auth_response, 'status_code', None) != 200:
                         return auth_response
 
         # Continue with normal request processing
