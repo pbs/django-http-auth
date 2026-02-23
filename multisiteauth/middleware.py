@@ -32,7 +32,6 @@ class BasicAuthProtectionMiddleware:
     def __init__(self, get_response):
         super(BasicAuthProtectionMiddleware, self).__init__(get_response)
         # we'll never get into process request in case HTTP_AUTH is disabled
-        print('-- BasicAuthProtectionMiddleware init--')
         if not local_settings.HTTP_AUTH_ENABLED:
             msg = "Basic authentication is not used, this removes it from middleware"
             raise MiddlewareNotUsed(msg)
@@ -51,7 +50,7 @@ class BasicAuthProtectionMiddleware:
     def __call__(self, request):
         # adapted from https://github.com/amrox/django-moat/blob/master/moat/middleware.py
         current_site = local_settings.get_current_site(request)
-        print('-- BasicAuthProtectionMiddleware __call__ --')
+
         if self.is_auth_enabled_for_site(current_site):
             # check if we are already authenticated
             if request.session.get('basicauth_username'):
