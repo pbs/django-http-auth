@@ -30,7 +30,7 @@ class BasicAuthProtectionMiddleware:
     """
 
     def __init__(self, get_response):
-        self.get_response = get_response
+        super(BasicAuthProtectionMiddleware, self).__init__(get_response)
         # we'll never get into process request in case HTTP_AUTH is disabled
         print('-- BasicAuthProtectionMiddleware init--')
         if not local_settings.HTTP_AUTH_ENABLED:
