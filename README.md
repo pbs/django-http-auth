@@ -19,5 +19,5 @@ Install from cheeshop using pip:
 >python3 -m twine upload --repository nexuspbs-internal dist/*
 
 # Acknowledgements
-Code insipred by:
+Code inspired by:
 * https://github.com/amrox/django-moat
