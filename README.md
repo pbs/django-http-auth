@@ -5,7 +5,6 @@ django-http-auth is a small app that aallows the user of django with multisite s
 ## Instalation
 Install from cheeshop using pip:
 >pip install django-http-auth
-> 
 
 ## Steps to upload the package to Nexus: 
 1. If first time, create virtual env and install twine:
