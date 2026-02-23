@@ -61,7 +61,7 @@ class BasicAuthProtectionMiddleware:
 
                 if (local_settings.HTTP_AUTH_ALLOW_ADMIN
                         and (request.path.startswith(reverse('admin:index'))
-                             or request.user.is_authenticated())):
+                             or request.user.is_authenticated)):
                     pass  # Allow access
                 elif self._matches_url_exceptions(request.path):
                     pass  # Allow access
