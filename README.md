@@ -8,7 +8,7 @@ Install from cheeshop using pip:
 
 ## Steps to upload the package to Nexus: 
 1. If first time, create virtual env and install twine:
->python3 -m venv env
+>python3 -m venv venv
 >source venv/bin/activate
 >pip install setuptools wheel Django twine  
 
