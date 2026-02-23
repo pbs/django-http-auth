@@ -74,7 +74,7 @@ class BasicAuthProtectionMiddleware:
 
                     # Return 401 response if auth fails
                     auth_response = self._http_auth_helper(request)
-                    if auth_response is not None and getattr(auth_response, 'status_code', None) != 200:
+                    if auth_response is not None:
                         return auth_response
 
         # Continue with normal request processing
